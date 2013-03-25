@@ -27,7 +27,7 @@ def play_tag(client, tags, strip):
 	files = list(files)
 	random.shuffle(files)
 	curr = client.currentsong()
-	if curr['file'] in files:
+	if curr and curr['file'] in files:
 		rotate(client, curr, files)
 	else:
 		replace(client, files)
