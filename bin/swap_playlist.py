@@ -58,7 +58,7 @@ def fade(client, vol):
 	while vol > 0:
 		vol = vol - 1
 		client.setvol(vol)
-		time.sleep(.2)
+		time.sleep(.1)
 
 def main():
 	usage =  "usage: %prog [options]\n\n"
