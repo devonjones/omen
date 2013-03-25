@@ -7,30 +7,31 @@ import sh
 import mpd
 import random
 from optparse import OptionParser
+from omen.files import get_tag, find_sign, get_sign
+from omen.config import OmenConfig
 
-def get_tag(tag, strip):
-	tags = []
-	for t in tag.split(" "):
-		if t.startswith("music:") or tag.startswith("-music:"):
-			tags.append(t)
-		elif t.startswith("-"):
-			tags.append("-music:%s" % t[1:])
-		else:
-			tags.append("music:%s" % t)
-	files = sh.tmsu("files", "--", tags)
-	return [f.replace(strip, '').strip() for f in files]
-
-def play_tag(client, tags, strip):
-	files = set()
-	for tag in tags:
-		files.update(get_tag(tag, strip))
-	files = list(files)
+def play_files(client, files):
 	random.shuffle(files)
 	curr = client.currentsong()
 	if curr and curr['file'] in files:
 		rotate(client, curr, files)
 	else:
 		replace(client, files)
+	if client.status()['state'] != "play":
+		print "Playing"
+		client.play()
+
+def play_sign(client, sign, strip):
+	files = set()
+	files.update(get_sign(sign))
+	files = [f.replace(strip, '').strip() for f in files]
+	play_files(client, files)
+
+def play_tag(client, tags, strip):
+	for tag in tags:
+		files.update(get_tag(tag, "music"))
+	files = [f.replace(strip, '').strip() for f in files]
+	play_files(client, files)
 
 def remove_list(client, curr_id):
 	for song in client.playlistinfo():
@@ -41,7 +42,8 @@ def rotate(client, curr, files):
 	client.random(1)
 	remove_list(client, curr['id'])
 	for f in files:
-		client.add(f)
+		if f != curr['file']:
+			client.add(f)
 
 def replace(client, files):
 	vol = int(client.status()['volume'])
@@ -61,22 +63,44 @@ def fade(client, vol):
 		time.sleep(.1)
 
 def main():
-	usage =  "usage: %prog [options]\n\n"
+	usage =  "usage: %prog [options] [sign dir]\n\n"
 	usage += "Plays music based on tmsu tag via mpd."
 	parser = option_parser(usage)
 	(options, args) = parser.parse_args()
+	apply_config(options)
+	sign = None
 	if not options.tags or len(options.tags) == 0:
-		sys.stderr.write("-t must be used one or more times\n")
-		sys.exit(1)
+		if len(args) == 1:
+			sign = find_sign(args[0], "music")
+		else:
+			sign = find_sign(".", "music")
+		if not sign:
+			sys.stderr.write("-t must be used one or more times, or must be run from an omen directory\n")
+			sys.exit(1)
 	client = mpd.MPDClient()
 	client.connect(options.host, options.port)
-	play_tag(client, options.tags, options.strip)
+	if sign:
+		play_sign(client, sign, options.strip)
+	else:
+		play_tag(client, options.tags, options.strip)
+
+def apply_config(options):
+	if OmenConfig.config_exists('music'):
+		config = OmenConfig.fetch_config('music')
+		if not options.strip and config.has_key('strip'):
+			options.strip = config['strip']
+		if config.has_key('mpd'):
+			mpd = config['mpd']
+			if not options.host and mpd.has_key('host'):
+				options.host = mpd['host']
+			if not options.port and mpd.has_key('port'):
+				options.port = mpd['port']
 
 def option_parser(usage):
 	parser = OptionParser(usage=usage)
-	parser.add_option("-H", "--host", dest="host", default="localhost",
+	parser.add_option("-H", "--host", dest="host",
 		help="MPD host (default: localhost)")
-	parser.add_option("-p", "--port", dest="port", default=6600, type="int",
+	parser.add_option("-p", "--port", dest="port", type="int",
 		help="MPD port (default: 6600)")
 	parser.add_option("-t", "--tags", dest="tags", action="append",
 		help="tags: can use -t multiple times if you want more then one tag collection")
