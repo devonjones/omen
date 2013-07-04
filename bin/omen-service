@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+import tornado.web
+import tornado.httpserver
+import static
+from os.path import dirname, abspath
+from tornado.options import define, options
+from omen.service import PictureViewerHandler
+
+def config_application():
+	static_dir = dirname(abspath(static.__file__))
+	application = tornado.web.Application([
+		(r"/", tornado.web.RedirectHandler, {"url": "/static/index.html"}),
+		(r"/pictures/viewer", PictureViewerHandler),
+		#(r"/names/(.*?)\/?", NameDeleteHandler),
+		#(r"/instances", InstancesHandler),
+		#(r"/instances/(.*?)\/?", InstanceIdHandler),
+		#(r"/load-balancers", LoadBalancersHandler),
+		#(r"/load-balancers/(.*?)\/?", LoadBalancerIdHandler),
+		(r"/static/(.*)", tornado.web.StaticFileHandler, {"path": static_dir})
+		])
+	return application
+
+def main():
+	option_parser()
+	tornado.options.parse_command_line()
+	application = config_application()
+	http_server = tornado.httpserver.HTTPServer(application)
+	http_server.listen(8080)
+	tornado.ioloop.IOLoop.instance().start()
+
+def option_parser():
+	pass
+	options.define("logfile", default="stderr",
+		help=" ".join(('The file to log to, or "stdout" or "stderr"',
+		'to log to those special file descriptors.',)))
+	options.define("loglevel", default="error",
+		help=" ".join(('The level to log at.',
+		'Valid levels are: debug, info, warning, error, and critical.',)))
+
+if (__name__ == "__main__"):
+	main()

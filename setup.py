@@ -10,8 +10,19 @@ setup(
 	license = "Apache",
 	scripts = [
 		"bin/omen-swap-playlist",
-		"bin/omen-swap-pictures"],
+		"bin/omen-swap-pictures",
+		"bin/omen-service",
+		"bin/omen"],
 	packages=find_packages(),
-	install_requires=["sh", "python-mpd", "pyyaml", "knewton.config"],
-	description = "Omen RPG technology conductory",
+	install_requires=[
+		"sh",
+		"python-mpd",
+		"pyyaml",
+		"knewton.config",
+		"tornado"
+	],
+	package_data = {
+		"static": ["*.html", "*.css", "*.js"]
+	},
+	description = "Omen RPG technology conductor",
 )

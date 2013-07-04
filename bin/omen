@@ -1,0 +1,3 @@
+#!/bin/bash
+omen-swap-pictures &
+omen-swap-playlist &
