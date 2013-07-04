@@ -1,43 +1,46 @@
 var i = 0;
 
 $(function() {
-  window.setInterval(function() { $("#timer-content").text(++i); }, 1000);
+	window.setInterval(
+		function() {
+			replace_image();
+		}, 10000);
 });
 
-$(function() {
+function replace_image() {
+	$.ajax({ url: "/images/current"}).done(function(data) {
+		if(data.image) {
+			var url = "/content/" + data.image
+			var win = $(window);
+			var fullscreen = $('#full');
+			var img = new Image();
+			img.onload = function() {
+				var imageWidth = this.width;
+				var imageHeight = this.height;
+				$("#display").fadeOut('slow', function() {
+					image = fullscreen.find('img')[0];
+					image.src = url;
+					var imageRatio = imageWidth / imageHeight;
+					var winWidth = win.width();
+					var winHeight = win.height();
+					var winRatio = winWidth / winHeight;
+					image = fullscreen.find('img');
+					if(winRatio < imageRatio) {
+						image.css({
+							width: winWidth,
+							height: Math.round(winWidth / imageRatio)
+						});
+					} else {
+						image.css({
+							width: Math.round(winHeight * imageRatio),
+							height: winHeight
+						});
+					}
+					$("#display").fadeIn();
+				});
+			}
+			img.src = url;
+		}
+	});
+}
 
-  var win = $(window),
-      fullscreen = $('#full'),
-      image = fullscreen.find('img'),
-      imageWidth = image.width(),
-      imageHeight = image.height(),
-      imageRatio = imageWidth / imageHeight;
-
-  function resizeImage() {
-    var winWidth = win.width(),
-        winHeight = win.height(),
-        winRatio = winWidth / winHeight;
-  
-    if(winRatio < imageRatio) {
-      image.css({
-        width: winWidth,
-        height: Math.round(winWidth / imageRatio)
-      });
-    } else {
-      image.css({
-        width: Math.round(winHeight * imageRatio),
-        height: winHeight
-      });
-    }
-  }
-
-  win.bind({
-    load: function() {
-      resizeImage();
-    },
-    resize: function() {
-      resizeImage();
-    }
-  });
-
-});
