@@ -1,6 +1,6 @@
-import knewton.config
+import k.config
 
-OmenConfigPath = knewton.config.ConfigPathDefaults([
+OmenConfigPath = k.config.ConfigPathDefaults([
 	'', '~/.omen', '/etc/omen'])
-OmenConfig = knewton.config.ConfigDefault(config_path=OmenConfigPath)
+OmenConfig = k.config.ConfigDefault(config_path=OmenConfigPath)
 

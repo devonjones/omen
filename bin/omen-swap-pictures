@@ -5,34 +5,29 @@ import os
 import os.path
 import sh
 from optparse import OptionParser
-from omen.files import get_tag, find_sign, get_sign
+from omen.files import get_tag, find_sign, get_raw_sign
 from omen.config import OmenConfig
+from omen.rest import Images
 
-def play_files(files):
-	pid = os.fork()
-	if pid == 0:
-		try:
-			sh.killall("-9", "qiv", _ok_code=[0,1])
-			sh.qiv("-fistrp", "--", files)
-		except sh.SignalException_9:
-			pass
+def play(sign, options):
+	if options.add:
+		Images().append(sign)
+	elif options.remove:
+		Images().remove(sign)
+	else:
+		Images().override(sign)
 
-def play_sign(sign):
-	files = set()
-	files.update(get_sign(sign))
-	files = [f.strip() for f in files]
-	play_files(files)
+def play_sign(sign_name, options):
+	sign = get_raw_sign(sign_name)
+	play(sign, options)
 
-def play_tag(tags):
-	files = set()
-	for tag in tags:
-		files.update(get_tag(tag))
-	files = [f.strip() for f in files]
-	play_files(files)
+def play_tag(tags, options):
+	sign = {'tags': tags}
+	play(sign, options)
 
 def main():
 	usage =  "usage: %prog [options] [sign dir]\n\n"
-	usage += "Displays pictures based on tmsu tag via qiv."
+	usage += "Displays pictures based on tmsu tag via omen-service."
 	parser = option_parser(usage)
 	(options, args) = parser.parse_args()
 	apply_config(options)
@@ -46,9 +41,9 @@ def main():
 			sys.stderr.write("-t must be used one or more times, or must be run from an omen directory\n")
 			sys.exit(1)
 	if sign:
-		play_sign(sign)
+		play_sign(sign, options)
 	else:
-		play_tag(options.tags)
+		play_tag(options.tags, options)
 
 def apply_config(options):
 	if OmenConfig.config_exists('pictures'):
@@ -58,6 +53,10 @@ def option_parser(usage):
 	parser = OptionParser(usage=usage)
 	parser.add_option("-t", "--tags", dest="tags", action="append",
 		help="tags: can use -t multiple times if you want more then one tag collection")
+	parser.add_option("-a", "--add", dest="add", default=False, action="store_true",
+		help="add images instead of replacing")
+	parser.add_option("-r", "--remove", dest="remove", default=False, action="store_true",
+		help="remove images instead of replacing")
 	return parser
 
 if __name__ == "__main__":

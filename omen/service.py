@@ -15,7 +15,7 @@ class TagListHandler(tornado.web.RequestHandler):
 class ImageListHandler(tornado.web.RequestHandler):
 	def prepare(self):
 		if self.request.headers.get("Content-Type") == "application/json":
-			self.json_args = json_decode(self.request.body)
+			self.json_args = json.loads(self.request.body)
 		else:
 			self.json_args = None
 
@@ -29,9 +29,9 @@ class ImageListHandler(tornado.web.RequestHandler):
 		if self.json_args:
 			# Overwrite
 			ImageListCache.clear()
-			for tag in json_args.get('tags', []):
+			for tag in self.json_args.get('tags', []):
 				ImageListCache.add_tag(tag, validator)
-			for fn in json_args.get('files', []):
+			for fn in self.json_args.get('files', []):
 				ImageListCache.add_file(fn, validator)
 		else:
 			for tag in self.get_arguments('tags'):

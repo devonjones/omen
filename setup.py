@@ -18,7 +18,7 @@ setup(
 		"sh",
 		"python-mpd",
 		"pyyaml",
-		"knewton.config",
+		"k.config",
 		"tornado"
 	],
 	package_data = {

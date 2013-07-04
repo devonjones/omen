@@ -22,6 +22,18 @@ def get_tag(tag, parent=None):
 		tags.append(t)
 	return [f.strip() for f in sh.tmsu("files", "--", tags)]
 
+def get_raw_sign(filename):
+	sign = {}
+	fullname = os.path.abspath(os.path.expanduser(filename))
+	with file(fullname) as signfn:
+		signfile = yaml.load(signfn)
+		if signfile.has_key('files'):
+			for f in signfile['files']:
+				sign['files'] = add_file(sign.setdefault('files', []), f, os.path.dirname(fullname))
+		if signfile.has_key('tags'):
+			sign['tags'] = signfile['tags']
+	return sign
+
 def get_sign(filename):
 	filelist = []
 	fullname = os.path.abspath(os.path.expanduser(filename))
