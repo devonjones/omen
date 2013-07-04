@@ -28,6 +28,7 @@ def play_sign(client, sign, strip):
 	play_files(client, files)
 
 def play_tag(client, tags, strip):
+	files = set()
 	for tag in tags:
 		files.update(get_tag(tag, "music"))
 	files = [f.replace(strip, '').strip() for f in files]

@@ -8,7 +8,9 @@ setup(
 	author="Devon Jones",
 	author_email="devon.jones@gmail.com",
 	license = "Apache",
-	scripts = ["bin/omen-swap-playlist"],
+	scripts = [
+		"bin/omen-swap-playlist",
+		"bin/omen-swap-pictures"],
 	packages=find_packages(),
 	install_requires=["sh", "python-mpd", "pyyaml", "knewton.config"],
 	description = "Omen RPG technology conductory",

@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+import sys
+import time
+import os
+import os.path
+import sh
+from optparse import OptionParser
+from omen.files import get_tag, find_sign, get_sign
+from omen.config import OmenConfig
+
+def play_files(files):
+	pid = os.fork()
+	if pid == 0:
+		try:
+			sh.killall("-9", "qiv", _ok_code=[0,1])
+			sh.qiv("-fistrp", "--", files)
+		except sh.SignalException_9:
+			pass
+
+def play_sign(sign):
+	files = set()
+	files.update(get_sign(sign))
+	files = [f.strip() for f in files]
+	play_files(files)
+
+def play_tag(tags):
+	files = set()
+	for tag in tags:
+		files.update(get_tag(tag))
+	files = [f.strip() for f in files]
+	play_files(files)
+
+def main():
+	usage =  "usage: %prog [options] [sign dir]\n\n"
+	usage += "Displays pictures based on tmsu tag via qiv."
+	parser = option_parser(usage)
+	(options, args) = parser.parse_args()
+	apply_config(options)
+	sign = None
+	if not options.tags or len(options.tags) == 0:
+		if len(args) == 1:
+			sign = find_sign(args[0], "pictures")
+		else:
+			sign = find_sign(".", "pictures")
+		if not sign:
+			sys.stderr.write("-t must be used one or more times, or must be run from an omen directory\n")
+			sys.exit(1)
+	if sign:
+		play_sign(sign)
+	else:
+		play_tag(options.tags)
+
+def apply_config(options):
+	if OmenConfig.config_exists('pictures'):
+		config = OmenConfig.fetch_config('pictures')
+
+def option_parser(usage):
+	parser = OptionParser(usage=usage)
+	parser.add_option("-t", "--tags", dest="tags", action="append",
+		help="tags: can use -t multiple times if you want more then one tag collection")
+	return parser
+
+if __name__ == "__main__":
+	sys.exit(main())
+
