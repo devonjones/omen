@@ -4,7 +4,7 @@ $(function() {
 	window.setInterval(
 		function() {
 			replace_image();
-		}, 10000);
+		}, 30000);
 });
 
 function replace_image() {
