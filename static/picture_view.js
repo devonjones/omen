@@ -4,7 +4,7 @@ $(function() {
 	window.setInterval(
 		function() {
 			replace_image();
-		}, 10000);
+		}, 30000);
 });
 
 function replace_image() {
@@ -17,27 +17,29 @@ function replace_image() {
 			img.onload = function() {
 				var imageWidth = this.width;
 				var imageHeight = this.height;
-				$("#display").fadeOut('slow', function() {
-					image = fullscreen.find('img')[0];
-					image.src = url;
-					var imageRatio = imageWidth / imageHeight;
-					var winWidth = win.width();
-					var winHeight = win.height();
-					var winRatio = winWidth / winHeight;
-					image = fullscreen.find('img');
-					if(winRatio < imageRatio) {
-						image.css({
-							width: winWidth,
-							height: Math.round(winWidth / imageRatio)
-						});
-					} else {
-						image.css({
-							width: Math.round(winHeight * imageRatio),
-							height: winHeight
-						});
-					}
-					$("#display").fadeIn();
-				});
+				image = fullscreen.find('img')[0];
+				if (img.src != image.src) {
+					$("#display").fadeOut('slow', function() {
+						image.src = url;
+						var imageRatio = imageWidth / imageHeight;
+						var winWidth = win.width();
+						var winHeight = win.height();
+						var winRatio = winWidth / winHeight;
+						image = fullscreen.find('img');
+						if(winRatio < imageRatio) {
+							image.css({
+								width: winWidth,
+								height: Math.round(winWidth / imageRatio)
+							});
+						} else {
+							image.css({
+								width: Math.round(winHeight * imageRatio),
+								height: winHeight
+							});
+						}
+						$("#display").fadeIn();
+					});
+				}
 			}
 			img.src = url;
 		}
